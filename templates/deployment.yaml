@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "terraform.fullname" . }}
+  labels:
+    {{- include "terraform.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "terraform.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- if (include "terraform.createSecret" .) }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.backend.create }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- end }}
+      labels:
+        {{- include "terraform.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "terraform.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      {{- if .Values.backend.create }}
+        - name: create-backend
+          {{- if eq .Values.backend.type "gcs" }}
+          image: "{{ .Values.gcs.image }}:{{ .Values.gcs.imageTag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sh"]
+          args:
+          {{- if eq .Values.backend.type "gcs" }}
+            - "/scripts/gcs.sh"
+            - {{ .Values.backend.config.bucket }}
+          {{- end }}
+          {{- if .Values.gcs.project }}
+            - {{ .Values.gcs.project }}
+          {{- end }}
+          {{- if or .Values.google.serviceAccountSecret .Values.google.serviceAccountKey }}
+            - /credentials/credentials.json
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          terminationMessagePolicy: FallbackToLogsOnError
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          {{- if or .Values.google.serviceAccountSecret .Values.google.serviceAccountKey }}
+          - mountPath: /credentials
+            name: credentials
+          {{- end }}
+          - mountPath: /scripts
+            name: scripts
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          # run for eternity but terminate immediately if k8s deletes the pod
+          args: ["-c", "trap : INT TERM; sleep infinity & wait"]
+          env:
+          {{- if eq .Values.backend.type "gcs" }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /credentials/credentials.json
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          workingDir: /workspace
+          volumeMounts:
+          - mountPath: /workspace
+            name: workspace
+          {{- if or .Values.google.serviceAccountSecret .Values.google.serviceAccountKey }}
+          - mountPath: /credentials
+            name: credentials
+          {{- end }}
+      volumes:
+      - name: workspace
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.existingClaim | default (include "terraform.fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      {{- if or .Values.google.serviceAccountSecret .Values.google.serviceAccountKey }}
+      - name: credentials
+        secret:
+          secretName: {{ include "terraform.fullname" . }}
+      {{- end }}
+      {{- if .Values.backend.create }}
+      - name: scripts
+        configMap:
+          name: {{ template "terraform.fullname" . }}
+          defaultMode: 0555
+      {{- end }}
+

@@ -1,0 +1,8 @@
+{{- if .Values.backend.create }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "terraform.fullname" . }}
+data:
+  gcs.sh: | {{ .Files.Get "scripts/gcs.sh" | nindent 4 }}
+{{- end }}

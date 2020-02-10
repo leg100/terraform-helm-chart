@@ -1,0 +1,10 @@
+# also need to supply:
+# --set-file=serviceAccountKey=<path_to_key_file>
+backend:
+  create: true
+  type: gcs
+  config:
+    bucket: automatize-tfstate
+    prefix: funk
+gcs:
+  project: automatize-admin

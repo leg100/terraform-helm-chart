@@ -1,0 +1,5 @@
+# Example workspace
+workspace/
+
+# test service account key
+service-account-key.json
