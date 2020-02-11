@@ -19,7 +19,7 @@ And comes with a wrapper script that does the following:
 The chart can be instructed to create a backend as well as initialize it, carrying out the following steps:
 
 1. Creates the backend if it doesn't exist already.
-2. Adds a configuration file to the workspace, `backend.tf` specifying the backend type (this is a [requirement](https://www.terraform.io/docs/backends/config.html) of terraform.
+2. Adds a configuration file to the workspace, `backend.tf` specifying the backend type (a [requirement](https://www.terraform.io/docs/backends/config.html) of terraform).
 3. Runs the `terraform init` command with the backend configuration to complete the backend initialization process.
 
 So far only the GCS backend is supported.
