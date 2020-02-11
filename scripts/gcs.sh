@@ -16,3 +16,9 @@ if [[ -n "$service_account_key" ]]; then
 
 gsutil ls gs://$bucket || gsutil mb $bucket_opts gs://$bucket
 gsutil versioning set on gs://$bucket
+
+cat > provider.tf <<EOF
+terraform {
+  backend "gcs" {}
+}
+EOF
