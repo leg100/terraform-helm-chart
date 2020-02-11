@@ -14,6 +14,28 @@ And comes with a wrapper script that does the following:
 * uploads your configuration to the pod
 * invokes terraform on the pod
 
+### Backend configuration
+
+The chart can be instructed to create a backend as well as initialize it. It carries out the following steps:
+
+1. Creates the backend if it doesn't exist already.
+2. Adds a configuration file to the workspace, `backend.tf` specifying the backend type (this is a [requirement](https://www.terraform.io/docs/backends/config.html) of terraform.
+3. Runs the `terraform init` command with the backend configuration to complete the backend initialization process.
+
+So far only the GCS backend is supported.
+
+### Wrapper script
+
+A wrapper script, `./terraform-wrapper.sh`, invokes terraform on kubernetes like so:
+
+1. Uploads your local terraform configuration to the workspace pod
+2. Invokes terraform on the pod with the provided arguments, e.g. to run a plan:
+
+```bash
+cd <your_local_workspace_dir>
+./terraform-wrapper.sh plan
+```
+
 ## TODO
 
 - [ ] RBAC
