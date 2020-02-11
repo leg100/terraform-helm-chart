@@ -16,7 +16,7 @@ And comes with a wrapper script that does the following:
 
 ### Backend configuration
 
-The chart can be instructed to create a backend as well as initialize it. It carries out the following steps:
+The chart can be instructed to create a backend as well as initialize it, carrying out the following steps:
 
 1. Creates the backend if it doesn't exist already.
 2. Adds a configuration file to the workspace, `backend.tf` specifying the backend type (this is a [requirement](https://www.terraform.io/docs/backends/config.html) of terraform.
