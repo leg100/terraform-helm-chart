@@ -3,11 +3,11 @@ Run terraform on kubernetes
 
 ## Description
 
-This helm chart does the following:
+The helm chart deploys everything necessary to manage a terraform workspace on kubernetes:
 
+* a persistent volume hosting the workspace
 * an idle pod running the official terraform docker image
-* creates a persistent volume for a workspace
-* optionally creates a backend (GCS currently supported)
+* create and configure the backend (only GCS currently supported)
 
 And comes with a wrapper script that does the following:
 
