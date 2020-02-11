@@ -17,7 +17,6 @@ And comes with a wrapper script that does the following:
 ## TODO
 
 - [ ] RBAC
-- [ ] Init container to run terraform init configuring backend
 
 ## Configuration
 
