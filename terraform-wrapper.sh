@@ -7,7 +7,13 @@ remote_cmd() {
     if [[ $# -gt 1 ]]
     then
         lastArg=${@:$#}
-        dir="$lastArg"
+
+        # if last arg is not a flag
+        # then it's the directory arg
+        if [[ $lastArg != -* ]]
+        then
+            dir="$lastArg"
+        fi
     fi
 
     # assumes only one pod
