@@ -29,11 +29,10 @@ So far only the GCS backend is supported.
 A wrapper script, `./terraform-wrapper.sh`, invokes terraform on kubernetes like so:
 
 1. Uploads your local terraform configuration to the workspace pod
-2. Invokes terraform on the pod with the provided arguments, e.g. to run a plan:
+2. Invokes terraform on the pod with the provided arguments, e.g. to run a plan for a local configuration in `./workspace`:
 
 ```bash
-cd <your_local_workspace_dir>
-./terraform-wrapper.sh plan
+./terraform-wrapper.sh plan ./workspace
 ```
 
 ## TODO
