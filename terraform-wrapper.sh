@@ -4,6 +4,8 @@ set -e
 
 remote_cmd() {
     dir="."
+    tfArgs="$*"
+
     if [[ $# -gt 1 ]]
     then
         lastArg=${@:$#}
@@ -13,6 +15,8 @@ remote_cmd() {
         if [[ $lastArg != -* ]]
         then
             dir="$lastArg"
+            allButlastArg="${@:1:$(($#-1))}"
+            tfArgs=$allButlastArg
         fi
     fi
 
@@ -22,10 +26,8 @@ remote_cmd() {
     # uploads contents of workspace to pod
     tar cf - --exclude .terraform $dir | kubectl exec $POD_NAME -i -- tar xof - -C /workspace
 
-    allButlastArg="${@:1:$(($#-1))}"
-
     # invoke tf in pod
-    exec kubectl exec $POD_NAME -- terraform $allButlastArg
+    exec kubectl exec $POD_NAME -- terraform $tfArgs
 }
 
 cmd="$1"
