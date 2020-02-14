@@ -12,7 +12,7 @@ fi
 
 if [[ -n "$service_account_key" ]]; then
   gcloud auth activate-service-account --key-file $service_account_key
- fi
+fi
 
 gsutil ls gs://$bucket || gsutil mb $bucket_opts gs://$bucket
 gsutil versioning set on gs://$bucket
