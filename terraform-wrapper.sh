@@ -23,8 +23,15 @@ remote_cmd() {
     # assumes only one pod
     POD_NAME=$(kubectl get -l app.kubernetes.io/name=terraform pod -ojsonpath="{.items[0].metadata.name}")
 
-    # uploads contents of workspace to pod
-    tar cf - --exclude .terraform $dir | kubectl exec $POD_NAME -i -- tar xof - -C /workspace
+    # delete existing contents of /workspace on pod
+    # except:
+    #   * `./backend.tf`
+    #   * `./.terraform`
+    # upload contents of workspace to pod
+    pushd $dir
+    tar cf - $(find -name '*.tf' -o -path ./.terraform/environment) \
+        | kubectl exec $POD_NAME -i -- sh -c "find . \! -name ./backend.tf -o \! -path './.terraform*' -mindepth 1 -delete && tar xof -"
+    popd
 
     # invoke tf in pod
     exec kubectl exec $POD_NAME -- terraform $tfArgs
