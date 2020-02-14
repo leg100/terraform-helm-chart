@@ -50,10 +50,7 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          workingDir: /workspace
           volumeMounts:
-          - mountPath: /workspace
-            name: workspace
           {{- if or .Values.google.serviceAccountSecret .Values.google.serviceAccountKey }}
           - mountPath: /credentials
             name: credentials
@@ -63,15 +60,9 @@ spec:
         - name: init-backend
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["terraform"]
+          command: ["sh"]
           args:
-            - init
-            - -backend=true
-          {{- range $key, $val := .Values.backend.config }}
-            - -backend-config={{ $key }}={{ $val }}
-          {{- end }}
-            - -no-color
-            - -input=false
+            - "/scripts/init.sh"
           env:
           {{- if eq .Values.backend.type "gcs" }}
             - name: GOOGLE_APPLICATION_CREDENTIALS

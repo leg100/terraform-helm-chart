@@ -5,4 +5,19 @@ metadata:
   name: {{ include "terraform.fullname" . }}
 data:
   gcs.sh: | {{ .Files.Get "scripts/gcs.sh" | nindent 4 }}
+  init.sh: |
+    # delete everything first
+    find . -mindepth 1 -delete
+
+    cat > backend.tf <<-EOF
+    terraform {
+      backend {{ .Values.backend.type | quote }} {
+        {{- range $key, $val := .Values.backend.config }}
+        {{ $key }} = {{ $val | quote }}
+        {{- end }}
+      }
+    }
+    EOF
+
+    terraform init -input=false -no-color
 {{- end }}
